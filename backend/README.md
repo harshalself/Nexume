@@ -1,0 +1,33 @@
+## 🚧 TODO: Backend Tasks
+
+- [x] Add migration: store (encrypted) LLM API key in users table
+- [x] User sign in and sign up
+- [x] Users can read and update their profile
+- [x] Create, read, update, delete job descriptions (CRUD completed)
+- [ ] Upload multiple resumes into Supabase 'resumes' bucket
+- [ ] Set up a listener (Supabase Function or backend script) for resume uploads
+- [ ] Implement the resume matcher logic and integration with Gemini API
+  - Use Gemini API (LLM) with system prompt
+  - Parse resume and job description
+  - Calculate match percentage (custom formula)
+  - Store result in matches table
+- [ ] Script/listener: detect new resume uploads and notify matcher
+- [ ] Fetch candidates by job description, including:
+  - Name
+  - Email
+  - Match percentage
+  - Resume
+  - Email status
+- [ ] Design and implement analytics endpoints
+  - Total job descriptions
+  - Total candidates/resumes
+  - Top candidates (by match %)
+  - Matches per job
+  - Recent uploads
+  - Email status breakdown
+  - Resume upload trends
+  - (Add more as needed)
+  - (Optional) Most active users, job fill rate, candidate engagement, etc.
+- [ ] Document all endpoints and analytics in API docs
+
+---
