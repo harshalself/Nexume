@@ -1,10 +1,20 @@
-// Mock Job Description Service
-import {
-  JD,
-  JDFormData,
-  JobStatus,
-} from "../interfaces/jobDescription.interface";
+export type JobStatus = "Active" | "Inactive";
 
+export interface JD {
+  id: number;
+  title: string;
+  description: string;
+  status: JobStatus;
+  created: string;
+}
+
+export interface JDFormData {
+  title: string;
+  description: string;
+  status: JobStatus;
+}
+
+// Mock Job Description Service
 let mockJobDescriptions: JD[] = [
   {
     id: 1,

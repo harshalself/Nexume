@@ -7,7 +7,6 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import Navbar from "../../components/Navbar";
 import authConfig from "../../config/authConfig";
-import { useSignIn } from "../../hooks/useAuth";
 import { useAuthContext } from "../../contexts/AuthContext";
 
 const SignIn = () => {
@@ -15,14 +14,12 @@ const SignIn = () => {
     authConfig.signIn;
   const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
-  const { handleSignIn, loading, error } = useSignIn();
-  const { login } = useAuthContext();
+  const { handleSignIn, loading, error } = useAuthContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await handleSignIn(formData.email, formData.password);
-    if (res && res.user && res.token) {
-      login(res.user, res.token);
+    const success = await handleSignIn(formData.email, formData.password);
+    if (success) {
       navigate("/dashboard");
     }
   };

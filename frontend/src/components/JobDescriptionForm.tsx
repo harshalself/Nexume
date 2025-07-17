@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import {
-  JD,
-  JDFormData,
-  JOB_STATUS_OPTIONS,
-  JobStatus,
-} from "../interfaces/jobDescription.interface";
+import { JD, JDFormData, JobStatus } from "../services/jobDescription.service";
 import { Button } from "./ui/button";
+
+const JOB_STATUS_OPTIONS: JobStatus[] = ["Active", "Inactive"];
 
 interface Props {
   initialData: JD | null;

@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { IProfile, IProfileUpdateData } from "../interfaces/profile.interface";
+import React from "react";
 import { Button } from "./ui/button";
 
-type Props = {
-  profile: IProfile;
+type ProfileFormProps = {
+  profile: {
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
   loading: boolean;
   error: string | null;
   editing: boolean;
   setEditing: (v: boolean) => void;
-  onUpdate: (data: IProfileUpdateData) => void;
+  onUpdate: (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  }) => void;
   success: boolean;
 };
 
-const ProfileForm: React.FC<Props> = ({
+const ProfileForm: React.FC<ProfileFormProps> = ({
   profile,
   loading,
   error,
@@ -21,20 +28,18 @@ const ProfileForm: React.FC<Props> = ({
   onUpdate,
   success,
 }) => {
-  const [form, setForm] = useState<IProfileUpdateData>({
-    firstname: profile.firstname,
-    lastname: profile.lastname,
-    email: profile.email,
-    password: profile.password,
+  const [form, setForm] = React.useState({
+    firstName: profile.firstName || "",
+    lastName: profile.lastName || "",
+    email: profile.email || "",
   });
 
   React.useEffect(() => {
     if (!editing) {
       setForm({
-        firstname: profile.firstname,
-        lastname: profile.lastname,
-        email: profile.email,
-        password: profile.password,
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
+        email: profile.email || "",
       });
     }
   }, [profile, editing]);
@@ -53,10 +58,9 @@ const ProfileForm: React.FC<Props> = ({
 
   const handleCancel = () => {
     setForm({
-      firstname: profile.firstname,
-      lastname: profile.lastname,
-      email: profile.email,
-      password: profile.password,
+      firstName: profile.firstName || "",
+      lastName: profile.lastName || "",
+      email: profile.email || "",
     });
     setEditing(false);
   };
@@ -72,30 +76,30 @@ const ProfileForm: React.FC<Props> = ({
         </div>
       )}
       <div className="mb-4">
-        <label htmlFor="firstname" className="block text-sm font-medium mb-1">
+        <label htmlFor="firstName" className="block text-sm font-medium mb-1">
           First Name
         </label>
         <input
-          id="firstname"
-          name="firstname"
+          id="firstName"
+          name="firstName"
           type="text"
           className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-          value={form.firstname}
+          value={form.firstName}
           onChange={handleChange}
           disabled={!editing}
           required
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="lastname" className="block text-sm font-medium mb-1">
+        <label htmlFor="lastName" className="block text-sm font-medium mb-1">
           Last Name
         </label>
         <input
-          id="lastname"
-          name="lastname"
+          id="lastName"
+          name="lastName"
           type="text"
           className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-          value={form.lastname}
+          value={form.lastName}
           onChange={handleChange}
           disabled={!editing}
           required
@@ -111,21 +115,6 @@ const ProfileForm: React.FC<Props> = ({
           type="email"
           className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
           value={form.email}
-          onChange={handleChange}
-          disabled={!editing}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="password" className="block text-sm font-medium mb-1">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-          value={form.password}
           onChange={handleChange}
           disabled={!editing}
           required

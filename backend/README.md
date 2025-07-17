@@ -1,23 +1,33 @@
 ## 🚧 TODO: Backend Tasks
 
 - [x] Add migration: store (encrypted) LLM API key in users table
+  - [x] Test and verify functionality after implementation
 - [x] User sign in and sign up
+  - [x] Test and verify functionality after implementation
 - [x] Users can read and update their profile
+  - [x] Test and verify functionality after implementation
 - [x] Create, read, update, delete job descriptions (CRUD completed)
+  - [x] Test and verify functionality after implementation
 - [ ] Upload multiple resumes into Supabase 'resumes' bucket
+  - [ ] Test and verify functionality after implementation
 - [ ] Set up a listener (Supabase Function or backend script) for resume uploads
-- [ ] Implement the resume matcher logic and integration with Gemini API
-  - Use Gemini API (LLM) with system prompt
-  - Parse resume and job description
-  - Calculate match percentage (custom formula)
-  - Store result in matches table
+  - [ ] Test and verify functionality after implementation
+- [ ] Implement the resume matcher logic and integration with Groq LLM
+  - [ ] Shortlist resumes using TF-IDF + Cosine Similarity (parse, vectorize, compare, pick top N/threshold)
+  - [ ] Use Groq LLM with system prompt
+  - [ ] Parse resume and job description
+  - [ ] Calculate match percentage (custom formula)
+  - [ ] Store result in matches table
+  - [ ] Test and verify functionality after implementation
 - [ ] Script/listener: detect new resume uploads and notify matcher
+  - [ ] Test and verify functionality after implementation
 - [ ] Fetch candidates by job description, including:
   - Name
   - Email
   - Match percentage
   - Resume
   - Email status
+  - [ ] Test and verify functionality after implementation
 - [ ] Design and implement analytics endpoints
   - Total job descriptions
   - Total candidates/resumes
@@ -28,6 +38,8 @@
   - Resume upload trends
   - (Add more as needed)
   - (Optional) Most active users, job fill rate, candidate engagement, etc.
+  - [ ] Test and verify functionality after implementation
 - [ ] Document all endpoints and analytics in API docs
+  - [ ] Test and verify documentation completeness
 
 ---

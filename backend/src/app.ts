@@ -58,7 +58,7 @@ class App {
     // Set CORS to allow all origins and allow credentials
     this.app.use(
       cors({
-        origin: "*",
+        origin: "http://localhost:5173",
         credentials: true,
       })
     );

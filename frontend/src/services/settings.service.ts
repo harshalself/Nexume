@@ -1,4 +1,12 @@
-import { Settings, SettingsUpdateData } from "../interfaces/settings.interface";
+export interface Settings {
+  provider: string;
+  apiKey: string;
+}
+
+export interface SettingsUpdateData {
+  provider?: string;
+  apiKey?: string;
+}
 
 let mockSettings: Settings = {
   provider: "OpenAI",

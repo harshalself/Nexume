@@ -49,7 +49,7 @@ const Home = () => {
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
                 {hero.cta.map((action, idx) =>
                   action.primary ? (
-                    <Link to={action.to} key={idx}>
+                    <Link to={action.to} key={action.to || idx}>
                       <Button size="lg" className="h-12 btn-primary">
                         {action.label}
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -57,7 +57,7 @@ const Home = () => {
                     </Link>
                   ) : (
                     <Button
-                      key={idx}
+                      key={action.to || idx}
                       size="lg"
                       variant="outline"
                       className="h-12 hover:bg-muted hover:border-blue-200 hover:text-primary transition-colors">
@@ -98,7 +98,7 @@ const Home = () => {
                       <div className="flex gap-2 flex-wrap">
                         {demoSection.quickActions.map((action, idx) => (
                           <div
-                            key={idx}
+                            key={action}
                             className="px-3 py-1 gradient-accent text-primary rounded-full text-xs">
                             {action}
                           </div>
@@ -133,7 +133,7 @@ const Home = () => {
               const Icon = feature.icon;
               return (
                 <div
-                  key={idx}
+                  key={feature.title || idx}
                   className="grid gap-4 p-6 rounded-lg bg-background border hover:shadow-lg transition-shadow">
                   <div className="flex items-center gap-2">
                     <div className="p-2 rounded-lg gradient-accent">
@@ -164,7 +164,7 @@ const Home = () => {
           <div className="mx-auto grid max-w-5xl gap-6 py-12 lg:grid-cols-3">
             {templates.map((template, idx) => (
               <div
-                key={idx}
+                key={template.title || idx}
                 className="group relative overflow-hidden rounded-lg border bg-background p-2 hover:shadow-lg transition-shadow">
                 <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
                   <img
@@ -216,9 +216,9 @@ const Home = () => {
             </div>
           </div>
           <div className="mx-auto grid max-w-5xl gap-6 py-12 lg:grid-cols-3">
-            {testimonials.map((testimonial, idx) => (
+            {testimonials.map((testimonial) => (
               <div
-                key={idx}
+                key={testimonial.name + testimonial.role}
                 className="flex flex-col gap-4 p-6 bg-background rounded-lg border hover:shadow-lg transition-shadow">
                 <div className="flex items-center gap-2">
                   <div className="h-10 w-10 rounded-full gradient-accent flex items-center justify-center">
@@ -252,9 +252,9 @@ const Home = () => {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              {cta.actions.map((action, idx) =>
+              {cta.actions.map((action) =>
                 action.primary ? (
-                  <Link to={action.to} key={idx}>
+                  <Link to={action.to} key={action.to + action.label}>
                     <Button size="lg" className="h-12 btn-primary">
                       {action.label}
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -262,7 +262,7 @@ const Home = () => {
                   </Link>
                 ) : (
                   <Button
-                    key={idx}
+                    key={action.to + action.label}
                     size="lg"
                     variant="outline"
                     className="h-12 hover:bg-muted hover:border-blue-200 hover:text-primary transition-colors">

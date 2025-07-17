@@ -5,6 +5,13 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import {
+  signUp as apiSignUp,
+  signIn as apiSignIn,
+  getProfile as apiGetProfile,
+  updateProfile as apiUpdateProfile,
+  deleteProfile as apiDeleteProfile,
+} from "../services/auth.service";
 
 interface User {
   id: string;
@@ -15,51 +22,157 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (user: User, token: string) => void;
-  logout: () => void;
-  register: (user: User, token: string) => void;
+  error: string | null;
+  handleSignUp: (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
+  handleSignIn: (email: string, password: string) => Promise<boolean>;
+  handleSignOut: () => void;
+  handleGetProfile: () => Promise<void>;
+  handleUpdateProfile: (
+    data: Partial<User> & { password?: string }
+  ) => Promise<void>;
+  handleDeleteProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-    if (storedUser && token) {
+    const storedToken = localStorage.getItem("accessToken");
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
+      setToken(storedToken);
       setIsAuthenticated(true);
     }
     setLoading(false);
   }, []);
 
-  const login = (user: User, token: string) => {
-    setUser(user);
-    setIsAuthenticated(true);
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("token", token);
+  const handleSignUp = async (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiSignUp(data);
+      setUser(res.user);
+      setToken(res.accessToken);
+      setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(res.user));
+      localStorage.setItem("accessToken", res.accessToken);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Sign up failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logout = () => {
+  const handleSignIn = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiSignIn(email, password);
+      setUser(res.user);
+      setToken(res.accessToken);
+      setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(res.user));
+      localStorage.setItem("accessToken", res.accessToken);
+      return true;
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Sign in failed");
+      setUser(null);
+      setToken(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = () => {
     setUser(null);
+    setToken(null);
     setIsAuthenticated(false);
     localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
   };
 
-  const register = (user: User, token: string) => {
-    login(user, token);
+  const handleGetProfile = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiGetProfile();
+      setUser(res.user);
+      localStorage.setItem("user", JSON.stringify(res.user));
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to fetch profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async (
+    data: Partial<User> & { password?: string }
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiUpdateProfile(data);
+      setUser(res.user);
+      localStorage.setItem("user", JSON.stringify(res.user));
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await apiDeleteProfile();
+      handleSignOut();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to delete profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, loading, login, logout, register }}>
+      value={{
+        user,
+        token,
+        isAuthenticated,
+        loading,
+        error,
+        handleSignUp,
+        handleSignIn,
+        handleSignOut,
+        handleGetProfile,
+        handleUpdateProfile,
+        handleDeleteProfile,
+      }}>
       {children}
     </AuthContext.Provider>
   );

@@ -8,7 +8,6 @@ import { Label } from "../../components/ui/label";
 import { Checkbox } from "../../components/ui/checkbox";
 import Navbar from "../../components/Navbar";
 import authConfig from "../../config/authConfig";
-import { useSignUp } from "../../hooks/useAuth";
 import { useAuthContext } from "../../contexts/AuthContext";
 
 const SignUp = () => {
@@ -28,17 +27,15 @@ const SignUp = () => {
     termsAccepted: false,
   });
   const navigate = useNavigate();
-  const { handleSignUp, loading, error } = useSignUp();
-  const { register } = useAuthContext();
+  const { handleSignUp, loading, error } = useAuthContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) return;
     if (!formData.termsAccepted) return;
     const { confirmPassword, termsAccepted, ...submitData } = formData;
-    const res = await handleSignUp(submitData);
-    if (res && res.user && res.token) {
-      register(res.user, res.token);
+    await handleSignUp(submitData);
+    if (!error) {
       navigate("/dashboard");
     }
   };

@@ -1,4 +1,11 @@
-import { Candidate } from "../interfaces/candidate.interface";
+export interface Candidate {
+  id: number;
+  name: string;
+  email: string;
+  matchPercentage: number;
+  resumeUrl: string;
+  jobDescriptionId: number;
+}
 
 const mockCandidates: Candidate[] = [
   {

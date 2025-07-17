@@ -1,14 +1,22 @@
 import React, { useState } from "react";
-import { useProfile } from "../../hooks/useProfile";
+import { useAuthContext } from "../../contexts/AuthContext";
 import ProfileForm from "../../components/ProfileForm";
 
 const Profile: React.FC = () => {
-  const { profile, loading, error, success, handleUpdate } = useProfile();
+  const { user, loading, error, handleUpdateProfile } = useAuthContext();
   const [editing, setEditing] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  if (!profile) {
+  if (!user) {
     return <div className="p-6">Loading...</div>;
   }
+
+  const handleUpdate = async (data: any) => {
+    await handleUpdateProfile(data);
+    setEditing(false);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 2000);
+  };
 
   return (
     <div className="space-y-6">
@@ -21,7 +29,7 @@ const Profile: React.FC = () => {
         </p>
       </div>
       <ProfileForm
-        profile={profile}
+        profile={user}
         loading={loading}
         error={error}
         editing={editing}

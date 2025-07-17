@@ -12,6 +12,7 @@ import {
   dashboardUser,
   dashboardNotifications,
 } from "../config/dashboardConfig";
+import { useAuthContext } from "../contexts/AuthContext";
 
 const DashboardNav = () => {
   const location = useLocation();
@@ -47,6 +48,13 @@ const DashboardNav = () => {
 
   const { branding } = homepageConfig;
   const LogoIcon = branding.logoIcon;
+
+  const { user } = useAuthContext();
+  const displayName = user
+    ? (user.firstName || "") + (user.lastName ? ` ${user.lastName}` : "") ||
+      user.email ||
+      "User"
+    : "User";
 
   const handleLogout = () => {
     sessionStorage.removeItem("hasAuthenticated");
@@ -101,7 +109,7 @@ const DashboardNav = () => {
                 {dashboardUser.avatarInitial}
               </div>
               <span className="text-sm font-medium text-gray-700">
-                {dashboardUser.name}
+                {displayName}
               </span>
             </button>
             {/* Dropdown Menu */}

@@ -1,4 +1,13 @@
-import { Resume, ResumeUploadData } from "../interfaces/resume.interface";
+export interface Resume {
+  id: number;
+  filename: string;
+  uploadedAt: string;
+  status: string;
+}
+
+export interface ResumeUploadData {
+  file: File;
+}
 
 const STORAGE_KEY = "mockResumes";
 
