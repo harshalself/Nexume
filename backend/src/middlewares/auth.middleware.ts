@@ -8,6 +8,8 @@ export class AuthMiddleware {
     const publicRoutes = [
       { method: "POST", path: "/auth/signup" },
       { method: "POST", path: "/auth/signin" },
+      { method: "GET", path: "/test/gemini" },
+      { method: "GET", path: "/test/resume-analysis" },
     ];
     // If the current route is public, skip authentication
     if (

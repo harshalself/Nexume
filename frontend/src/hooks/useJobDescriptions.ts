@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { JD, JDFormData } from "../interfaces/jobDescription.interface";
+import { JD, JDFormData } from "../services/jobDescription.service";
 import {
   getJobDescriptions,
   addJobDescription,

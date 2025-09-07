@@ -1,3 +1,5 @@
+import axios from "../lib/axios";
+
 export type JobStatus = "Active" | "Inactive";
 
 export interface JD {
@@ -14,51 +16,25 @@ export interface JDFormData {
   status: JobStatus;
 }
 
-// Mock Job Description Service
-let mockJobDescriptions: JD[] = [
-  {
-    id: 1,
-    title: "Frontend Developer",
-    description: "Responsible for building UI components.",
-    status: "Active",
-    created: "2024-06-01",
-  },
-  {
-    id: 2,
-    title: "Backend Engineer",
-    description: "Develop and maintain backend services.",
-    status: "Inactive",
-    created: "2024-05-28",
-  },
-];
-
 export const getJobDescriptions = async (): Promise<JD[]> => {
-  return Promise.resolve([...mockJobDescriptions]);
+  const res = await axios.get("/job-descriptions");
+  return res.data.jobDescriptions;
 };
 
 export const addJobDescription = async (data: JDFormData): Promise<JD> => {
-  const newJD: JD = {
-    id: Date.now(),
-    ...data,
-    created: new Date().toISOString().slice(0, 10),
-  };
-  mockJobDescriptions.push(newJD);
-  return Promise.resolve(newJD);
+  const res = await axios.post("/job-descriptions", data);
+  return res.data.jobDescription;
 };
 
 export const updateJobDescription = async (
   id: number,
   data: JDFormData
-): Promise<JD | null> => {
-  const idx = mockJobDescriptions.findIndex((jd) => jd.id === id);
-  if (idx === -1) return null;
-  mockJobDescriptions[idx] = { ...mockJobDescriptions[idx], ...data };
-  return Promise.resolve(mockJobDescriptions[idx]);
+): Promise<JD> => {
+  const res = await axios.put(`/job-descriptions/${id}`, data);
+  return res.data.jobDescription;
 };
 
 export const deleteJobDescription = async (id: number): Promise<boolean> => {
-  const idx = mockJobDescriptions.findIndex((jd) => jd.id === id);
-  if (idx === -1) return false;
-  mockJobDescriptions.splice(idx, 1);
-  return Promise.resolve(true);
+  await axios.delete(`/job-descriptions/${id}`);
+  return true;
 };

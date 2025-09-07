@@ -7,6 +7,7 @@ const validateEnv = () => {
     PORT: port(),
     SUPABASE_URL: str(),
     SUPABASE_SERVICE_ROLE_KEY: str(),
+    GEMINI_API_KEY: str(),
   });
 };
 

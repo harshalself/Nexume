@@ -20,7 +20,9 @@
   "author": "Harshal",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.50.3",
+    "@types/multer": "^2.0.0",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
     "bwip-js": "^4.6.0",
@@ -43,7 +45,7 @@
     "jsqr": "^1.4.0",
     "knex": "^3.1.0",
     "morgan": "^1.10.0",
-    "multer": "^2.0.0",
+    "multer": "^2.0.2",
     "nodemailer": "^7.0.3",
     "nodemon": "^3.1.9",
     "nunjucks": "^3.2.4",
