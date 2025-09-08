@@ -167,4 +167,62 @@ export class ResumeController {
       next(error);
     }
   };
+
+  /**
+   * Process an existing resume to extract text
+   */
+  public processResume = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) throw new HttpException(401, "Unauthorized");
+
+      const { id } = req.params;
+      const resume = await this.resumeService.processExistingResume(id, userId);
+
+      res.status(200).json({
+        message: "Resume processed successfully",
+        resume,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Match a resume against a job description
+   */
+  public matchResumeToJob = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) throw new HttpException(401, "Unauthorized");
+
+      const { id } = req.params;
+      const { jobDescription } = req.body;
+
+      if (!jobDescription) {
+        throw new HttpException(400, "Job description is required");
+      }
+
+      const matchResult = await this.resumeService.matchResumeToJob(
+        id,
+        jobDescription,
+        userId
+      );
+
+      res.status(200).json({
+        message: "Resume matching completed",
+        data: matchResult,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

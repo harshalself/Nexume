@@ -2,8 +2,10 @@ import { supabase } from "../utils/supabaseClient";
 import { IResume, IResumeUploadPayload } from "../interfaces/resume.interface";
 import HttpException from "../exceptions/HttpException";
 import path from "path";
+import ResumeProcessingService from "./resumeProcessing.service";
 
 export class ResumeService {
+  private resumeProcessingService = new ResumeProcessingService();
   /**
    * Upload a resume file and create database record
    */
@@ -38,6 +40,29 @@ export class ResumeService {
         .from("resumes")
         .getPublicUrl(filePath);
 
+      // Process the resume file to extract text
+      let processedData = null;
+      try {
+        const extractedText =
+          await this.resumeProcessingService.extractTextFromFile(
+            payload.file.buffer,
+            payload.file.mimetype
+          );
+
+        const processedResume =
+          this.resumeProcessingService.processResumeText(extractedText);
+        processedData = JSON.stringify(processedResume);
+
+        console.log(
+          `✅ Resume text processed successfully. Word count: ${processedResume.wordCount}`
+        );
+      } catch (processingError) {
+        console.warn(
+          `⚠️ Resume text processing failed: ${processingError.message}`
+        );
+        // Continue with upload even if text processing fails
+      }
+
       // Create database record
       const { data, error } = await supabase
         .from("resumes")
@@ -47,6 +72,7 @@ export class ResumeService {
             name: payload.name || null,
             email: payload.email || null,
             file_url: urlData.publicUrl,
+            parsed_data: processedData,
             is_deleted: false,
             uploaded_at: new Date().toISOString(),
           },
@@ -177,5 +203,154 @@ export class ResumeService {
     }
 
     return data as IResume;
+  }
+
+  /**
+   * Process an existing resume to extract text (if not already processed)
+   */
+  public async processExistingResume(
+    id: string,
+    userId: string
+  ): Promise<IResume> {
+    try {
+      // Get the resume
+      const resume = await this.getResumeById(id, userId);
+
+      if (resume.parsed_data) {
+        throw new HttpException(400, "Resume already processed");
+      }
+
+      // Download the file from storage
+      const fileBuffer = await this.downloadResumeFile(resume.file_url);
+
+      // Determine file type from URL or store in database
+      const fileExtension = resume.file_url.split(".").pop()?.toLowerCase();
+      let mimeType = "application/pdf"; // Default to PDF
+
+      if (fileExtension === "docx") {
+        mimeType =
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      } else if (fileExtension === "doc") {
+        mimeType = "application/msword";
+      }
+
+      // Extract and process text
+      const extractedText =
+        await this.resumeProcessingService.extractTextFromFile(
+          fileBuffer,
+          mimeType
+        );
+
+      const processedResume =
+        this.resumeProcessingService.processResumeText(extractedText);
+      const processedData = JSON.stringify(processedResume);
+
+      // Update the resume with processed data
+      const updatedResume = await this.updateResume(id, userId, {
+        parsed_data: processedData,
+      });
+
+      return updatedResume;
+    } catch (error) {
+      console.error("Resume processing error:", error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        500,
+        `Resume processing failed: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Match a resume against a job description
+   */
+  public async matchResumeToJob(
+    resumeId: string,
+    jobDescription: string,
+    userId: string
+  ): Promise<{
+    resumeId: string;
+    jobDescription: string;
+    analysis: {
+      score: number;
+      matchedKeywords: string[];
+      missingKeywords: string[];
+      strengths: string[];
+      recommendations: string[];
+    };
+    enhancedAnalysis?: any;
+  }> {
+    try {
+      // Get the resume
+      const resume = await this.getResumeById(resumeId, userId);
+
+      let resumeText = "";
+
+      if (resume.parsed_data) {
+        // Use already processed data
+        const processedData = JSON.parse(resume.parsed_data);
+        resumeText = processedData.text;
+      } else {
+        // Process the resume on-the-fly
+        const fileBuffer = await this.downloadResumeFile(resume.file_url);
+        const fileExtension = resume.file_url.split(".").pop()?.toLowerCase();
+        let mimeType = "application/pdf";
+
+        if (fileExtension === "docx") {
+          mimeType =
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        } else if (fileExtension === "doc") {
+          mimeType = "application/msword";
+        }
+
+        resumeText = await this.resumeProcessingService.extractTextFromFile(
+          fileBuffer,
+          mimeType
+        );
+      }
+
+      // Generate basic match analysis
+      const analysis = this.resumeProcessingService.generateMatchAnalysis(
+        resumeText,
+        jobDescription
+      );
+
+      return {
+        resumeId,
+        jobDescription,
+        analysis,
+      };
+    } catch (error) {
+      console.error("Resume matching error:", error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(500, `Resume matching failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Download resume file from storage
+   */
+  private async downloadResumeFile(fileUrl: string): Promise<Buffer> {
+    try {
+      // Extract file path from URL
+      const urlParts = fileUrl.split("/");
+      const filePath = urlParts.slice(-2).join("/"); // Get "resumes/filename"
+
+      const { data, error } = await supabase.storage
+        .from("resumes")
+        .download(filePath);
+
+      if (error) {
+        throw new Error(`File download failed: ${error.message}`);
+      }
+
+      return Buffer.from(await data.arrayBuffer());
+    } catch (error) {
+      throw new Error(`Failed to download resume file: ${error.message}`);
+    }
   }
 }

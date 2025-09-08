@@ -89,6 +89,18 @@ class ResumeRoute implements Route {
 
     // Soft delete resume
     this.router.delete(`${this.path}/:id`, this.resumeController.deleteResume);
+
+    // Process existing resume to extract text
+    this.router.post(
+      `${this.path}/:id/process`,
+      this.resumeController.processResume
+    );
+
+    // Match resume against job description
+    this.router.post(
+      `${this.path}/:id/match`,
+      this.resumeController.matchResumeToJob
+    );
   }
 }
 
