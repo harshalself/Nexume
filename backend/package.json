@@ -1,5 +1,5 @@
 {
-  "name": "Harshal-backend",
+  "name": "harshal-backend",
   "version": "1.0.0",
   "description": "Backend Framework by Harshal",
   "main": "app.ts",
