@@ -41,4 +41,8 @@ export class UserUpdateDto {
   @IsOptional()
   @IsString()
   profile_pic?: string;
+
+  @IsOptional()
+  @IsString()
+  llm_api_key?: string;
 }

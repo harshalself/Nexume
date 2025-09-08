@@ -8,21 +8,29 @@ export class JobDescriptionService {
     userId: string,
     dto: JobDescriptionCreateDto
   ): Promise<IJobDescription> {
-    const { title, description, status } = dto;
+    const { title, description, company, status } = dto;
+
+    // Build the insert object conditionally
+    const insertData: any = {
+      user_id: userId,
+      title,
+      description,
+      status: status || "active",
+      is_deleted: false,
+      created_at: new Date().toISOString(),
+    };
+
+    // Only add company if it's provided and the column exists
+    if (company) {
+      insertData.company = company;
+    }
+
     const { data, error } = await supabase
       .from("job_descriptions")
-      .insert([
-        {
-          user_id: userId,
-          title,
-          description,
-          status: status || "active",
-          is_deleted: false,
-          created_at: new Date().toISOString(),
-        },
-      ])
+      .insert([insertData])
       .select()
       .single();
+
     if (error || !data) {
       throw new HttpException(
         400,

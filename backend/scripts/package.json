@@ -1,0 +1,24 @@
+{
+  "name": "backend-api-tests",
+  "version": "1.0.0",
+  "description": "API testing scripts for Nexume backend",
+  "scripts": {
+    "test-apis": "node run-all-tests.js",
+    "test-user": "node test-user-apis.js",
+    "test-job": "node test-job-apis.js",
+    "test-resume": "node test-resume-apis.js",
+    "test-resume-upload": "node test-resume-upload.js",
+    "test-resume-complete": "node test-resume-upload-complete.js",
+    "test-resume-processing": "node test-resume-processing.js",
+    "test-enhanced-matching": "node test-enhanced-matching.js",
+    "test-gemini": "node test-gemini.js",
+    "test-candidates": "node test-candidates-apis.js",
+    "test-analytics": "node test-analytics-apis.js",
+    "debug-resume": "node debug-resume-upload.js",
+    "analyze": "node analyze-backend.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "form-data": "^4.0.4"
+  }
+}

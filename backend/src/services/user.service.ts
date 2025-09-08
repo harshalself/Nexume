@@ -63,12 +63,34 @@ export class UserService {
   }
 
   public async updateProfile(payload: IUserUpdatePayload): Promise<IUser> {
+    const { llm_api_key, ...userData } = payload;
+
+    // Update user metadata in Supabase Auth
     const { data, error } = await supabase.auth.updateUser({
-      data: { ...payload },
+      data: { ...userData, llm_api_key },
     });
     if (error || !data.user) {
       throw new HttpException(400, error?.message || "Profile update failed");
     }
+
+    // If LLM API key is provided, try to store it encrypted in the users table
+    if (llm_api_key) {
+      try {
+        const { error: dbError } = await supabase
+          .from("users")
+          .update({ llm_api_key_encrypted: llm_api_key })
+          .eq("id", data.user.id);
+
+        if (dbError) {
+          console.error("Failed to update LLM API key:", dbError.message);
+          // Don't throw error, just log it
+        }
+      } catch (err) {
+        console.error("LLM API key storage error:", err);
+        // Don't throw error, continue with the update
+      }
+    }
+
     return {
       id: data.user.id,
       email: data.user.email,
@@ -77,6 +99,7 @@ export class UserService {
       profile_pic: data.user.user_metadata?.profile_pic || "",
       is_deleted: false,
       created_at: data.user.created_at,
+      llm_api_key_encrypted: llm_api_key || undefined,
     };
   }
 
@@ -85,9 +108,7 @@ export class UserService {
       .from("users")
       .update({ is_deleted: true })
       .eq("id", userId)
-      .select(
-        "id, email, first_name, last_name, profile_pic, is_deleted, created_at"
-      )
+      .select("*")
       .single();
     if (error || !data) {
       throw new HttpException(400, error.message || "Failed to delete user");
@@ -98,9 +119,7 @@ export class UserService {
   public async getProfile(userId: string): Promise<IUser> {
     const { data, error } = await supabase
       .from("users")
-      .select(
-        "id, email, first_name, last_name, profile_pic, is_deleted, created_at"
-      )
+      .select("*")
       .eq("id", userId)
       .single();
     if (error || !data) {

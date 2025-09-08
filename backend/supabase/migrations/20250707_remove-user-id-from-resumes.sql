@@ -1,1 +1,0 @@
-ALTER TABLE resumes DROP COLUMN IF EXISTS user_id; 

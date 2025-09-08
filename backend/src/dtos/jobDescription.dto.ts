@@ -11,6 +11,10 @@ export class JobDescriptionCreateDto {
 
   @IsOptional()
   @IsString()
+  company?: string;
+
+  @IsOptional()
+  @IsString()
   status?: string; // 'active' or 'inactive'
 }
 
@@ -22,6 +26,10 @@ export class JobDescriptionUpdateDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  company?: string;
 
   @IsOptional()
   @IsString()

@@ -13,6 +13,8 @@ const testFiles = [
   "test-resume-processing.js",
   "test-enhanced-matching.js",
   "test-gemini.js",
+  "test-candidates-apis.js",
+  "test-analytics-apis.js",
 ];
 
 console.log("🧪 Running Nexume Backend Test Suite\n");

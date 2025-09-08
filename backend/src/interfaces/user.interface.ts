@@ -6,6 +6,8 @@ export interface IUser {
   profile_pic?: string;
   is_deleted?: boolean;
   created_at?: string;
+  llm_api_key_encrypted?: string;
+  llm_api_key_iv?: string;
 }
 
 export interface IUserSignUpPayload {
@@ -24,6 +26,7 @@ export interface IUserUpdatePayload {
   first_name?: string;
   last_name?: string;
   profile_pic?: string;
+  llm_api_key?: string;
 }
 
 export interface IUserResponsePayload {
