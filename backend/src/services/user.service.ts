@@ -80,15 +80,19 @@ export class UserService {
     };
   }
 
-  public async softDeleteProfile(userId: string): Promise<boolean> {
-    const { error } = await supabase
+  public async softDeleteProfile(userId: string): Promise<IUser> {
+    const { data, error } = await supabase
       .from("users")
       .update({ is_deleted: true })
-      .eq("id", userId);
-    if (error) {
+      .eq("id", userId)
+      .select(
+        "id, email, first_name, last_name, profile_pic, is_deleted, created_at"
+      )
+      .single();
+    if (error || !data) {
       throw new HttpException(400, error.message || "Failed to delete user");
     }
-    return true;
+    return data as IUser;
   }
 
   public async getProfile(userId: string): Promise<IUser> {

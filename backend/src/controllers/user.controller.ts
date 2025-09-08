@@ -79,10 +79,13 @@ export class UserController {
     try {
       const userId = req.user?.id;
       if (!userId) throw new HttpException(401, "Unauthorized");
-      await this.userService.softDeleteProfile(userId);
+      const result = await this.userService.softDeleteProfile(userId);
       res
         .status(200)
-        .json({ message: "User deleted (soft delete) successfully" });
+        .json({
+          message: "User deleted (soft delete) successfully",
+          user: result,
+        });
     } catch (error) {
       next(error);
     }
