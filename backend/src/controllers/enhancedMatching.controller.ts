@@ -23,10 +23,18 @@ export class EnhancedMatchingController {
       }
 
       // Perform enhanced matching
-      const matchAnalysis = await this.enhancedMatchingService.performEnhancedMatch(resumeId, jobId);
+      const matchAnalysis =
+        await this.enhancedMatchingService.performEnhancedMatch(
+          resumeId,
+          jobId
+        );
 
       // Save the result to database
-      const savedMatch = await this.enhancedMatchingService.saveMatchResult(resumeId, jobId, matchAnalysis);
+      const savedMatch = await this.enhancedMatchingService.saveMatchResult(
+        resumeId,
+        jobId,
+        matchAnalysis
+      );
 
       res.status(200).json({
         message: "Enhanced matching completed successfully",
@@ -50,7 +58,9 @@ export class EnhancedMatchingController {
     try {
       const { resumeId } = req.params;
 
-      const matches = await this.enhancedMatchingService.getMatchResults(resumeId);
+      const matches = await this.enhancedMatchingService.getMatchResults(
+        resumeId
+      );
 
       res.status(200).json({
         message: "Resume matches retrieved successfully",
@@ -75,7 +85,10 @@ export class EnhancedMatchingController {
       const { jobId } = req.params;
       const limit = parseInt(req.query.limit as string) || 10;
 
-      const matches = await this.enhancedMatchingService.getTopMatchesForJob(jobId, limit);
+      const matches = await this.enhancedMatchingService.getTopMatchesForJob(
+        jobId,
+        limit
+      );
 
       res.status(200).json({
         message: "Top matches retrieved successfully",
@@ -99,7 +112,8 @@ export class EnhancedMatchingController {
     try {
       const { resumeId } = req.params;
 
-      const insights = await this.enhancedMatchingService.generateResumeInsights(resumeId);
+      const insights =
+        await this.enhancedMatchingService.generateResumeInsights(resumeId);
 
       res.status(200).json({
         message: "Resume insights generated successfully",
@@ -120,30 +134,25 @@ export class EnhancedMatchingController {
     next: NextFunction
   ) => {
     try {
-      const { resumeId, jobId, minScore, maxScore, limit = 20, offset = 0 } = req.query;
+      const {
+        resumeId,
+        jobId,
+        minScore,
+        maxScore,
+        limit = 20,
+        offset = 0,
+      } = req.query;
 
-      let matches;
+      const filters = {
+        resumeId: resumeId as string,
+        jobId: jobId as string,
+        minScore: minScore ? parseInt(minScore as string) : undefined,
+        maxScore: maxScore ? parseInt(maxScore as string) : undefined,
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
+      };
 
-      if (resumeId) {
-        matches = await this.enhancedMatchingService.getMatchResults(resumeId as string);
-      } else if (jobId) {
-        matches = await this.enhancedMatchingService.getTopMatchesForJob(
-          jobId as string,
-          parseInt(limit as string)
-        );
-      } else {
-        // Get recent matches (would need service method)
-        matches = [];
-      }
-
-      // Apply score filters if provided
-      if (minScore || maxScore) {
-        matches = matches.filter((match) => {
-          if (minScore && match.match_score < parseInt(minScore as string)) return false;
-          if (maxScore && match.match_score > parseInt(maxScore as string)) return false;
-          return true;
-        });
-      }
+      const matches = await this.enhancedMatchingService.getAllMatches(filters);
 
       res.status(200).json({
         message: "Matches retrieved successfully",
@@ -167,10 +176,10 @@ export class EnhancedMatchingController {
     try {
       const { matchId } = req.params;
 
-      // This would need to be implemented in the service
-      // For now, just return a placeholder
+      await this.enhancedMatchingService.deleteMatch(matchId);
+
       res.status(200).json({
-        message: "Match deletion feature coming soon",
+        message: "Match result deleted successfully",
         matchId,
       });
     } catch (error) {
@@ -191,7 +200,10 @@ export class EnhancedMatchingController {
       const { matches } = req.body; // Array of {resumeId, jobId}
 
       if (!Array.isArray(matches) || matches.length === 0) {
-        throw new HttpException(400, "Matches array is required and must not be empty");
+        throw new HttpException(
+          400,
+          "Matches array is required and must not be empty"
+        );
       }
 
       const results = [];
@@ -207,8 +219,16 @@ export class EnhancedMatchingController {
             continue;
           }
 
-          const matchAnalysis = await this.enhancedMatchingService.performEnhancedMatch(resumeId, jobId);
-          const savedMatch = await this.enhancedMatchingService.saveMatchResult(resumeId, jobId, matchAnalysis);
+          const matchAnalysis =
+            await this.enhancedMatchingService.performEnhancedMatch(
+              resumeId,
+              jobId
+            );
+          const savedMatch = await this.enhancedMatchingService.saveMatchResult(
+            resumeId,
+            jobId,
+            matchAnalysis
+          );
 
           results.push(savedMatch);
         } catch (error: any) {

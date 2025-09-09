@@ -117,21 +117,63 @@ export class EnhancedMatchingService {
       let aiEnabled = true;
 
       try {
+        console.log("🤖 Starting AI analysis...");
+        console.log(
+          `   📏 Resume text length: ${resumeData.text?.length || 0} characters`
+        );
+        console.log(
+          `   📏 Job description length: ${
+            jobDescription.description?.length || 0
+          } characters`
+        );
+
+        // Debug: Check resume text content
+        if (resumeData.text) {
+          console.log(
+            `   📄 Resume text preview: "${resumeData.text.substring(
+              0,
+              200
+            )}..."`
+          );
+        } else {
+          console.log("   ⚠️ Resume text is empty or undefined!");
+        }
+
+        // Debug: Check job description content
+        if (jobDescription.description) {
+          console.log(
+            `   💼 Job description preview: "${jobDescription.description.substring(
+              0,
+              200
+            )}..."`
+          );
+        } else {
+          console.log("   ⚠️ Job description is empty or undefined!");
+        }
+
         aiAnalysis = await geminiClient.analyzeResumeMatch(
           resumeData.text,
           jobDescription.description
         );
+
+        console.log("🤖 AI analysis completed successfully");
+        console.log(`   📊 AI Match Score: ${aiAnalysis.matchScore}`);
+        console.log(
+          `   💪 AI Strengths: ${aiAnalysis.strengths?.length || 0} items`
+        );
+        console.log(`   🎯 AI Gaps: ${aiAnalysis.gaps?.length || 0} items`);
+
         aiScore = aiAnalysis.matchScore || 0;
       } catch (error) {
-        console.warn(
-          "AI analysis failed, falling back to basic analysis only:",
-          error
-        );
+        console.error("❌ AI analysis failed:", error);
+        console.error("   🔧 Error details:", error.message);
+        console.error("   🔧 Error stack:", error.stack);
+
         aiAnalysis = {
           matchScore: basicScore,
           strengths: basicAnalysis.strengths || [],
           gaps: basicAnalysis.recommendations || [],
-          assessment: "AI analysis unavailable, using basic matching only",
+          assessment: `AI analysis failed: ${error.message}. Using basic matching only.`,
         };
         aiScore = basicScore;
         aiEnabled = false;
@@ -152,6 +194,12 @@ export class EnhancedMatchingService {
       );
 
       const processingTime = Date.now() - startTime;
+
+      console.log("🔧 [ENHANCED_MATCHING] Final values before return:");
+      console.log(`   🔧 aiEnabled: ${aiEnabled}`);
+      console.log(`   🔧 aiScore: ${aiScore}`);
+      console.log(`   🔧 basicScore: ${basicScore}`);
+      console.log(`   🔧 combinedScore: ${combinedScore}`);
 
       return {
         match_score: combinedScore,
@@ -326,6 +374,105 @@ export class EnhancedMatchingService {
     } catch (error) {
       console.error("Failed to generate resume insights:", error);
       throw new Error(`Failed to generate resume insights: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get all matches with optional filters
+   */
+  async getAllMatches(
+    filters: {
+      resumeId?: string;
+      jobId?: string;
+      minScore?: number;
+      maxScore?: number;
+      limit?: number;
+      offset?: number;
+    } = {}
+  ): Promise<MatchResult[]> {
+    try {
+      let query = this.supabase.from("matches").select(
+        `
+          *,
+          job_descriptions (
+            id,
+            title,
+            company,
+            description
+          ),
+          resumes (
+            id,
+            name,
+            email,
+            file_url,
+            parsed_data
+          )
+        `
+      );
+
+      // Apply filters
+      if (filters.resumeId) {
+        query = query.eq("resume_id", filters.resumeId);
+      }
+
+      if (filters.jobId) {
+        query = query.eq("job_id", filters.jobId);
+      }
+
+      if (filters.minScore !== undefined) {
+        query = query.gte("match_score", filters.minScore);
+      }
+
+      if (filters.maxScore !== undefined) {
+        query = query.lte("match_score", filters.maxScore);
+      }
+
+      // Apply pagination
+      if (filters.limit) {
+        query = query.limit(filters.limit);
+      }
+
+      if (filters.offset) {
+        query = query.range(
+          filters.offset,
+          filters.offset + (filters.limit || 20) - 1
+        );
+      }
+
+      // Order by match date (most recent first)
+      query = query.order("matched_on", { ascending: false });
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Failed to get all matches:", error);
+      throw new Error(`Failed to get all matches: ${error.message}`);
+    }
+  }
+
+  /**
+   * Delete a match result
+   */
+  async deleteMatch(matchId: string): Promise<boolean> {
+    try {
+      const { error } = await this.supabase
+        .from("matches")
+        .delete()
+        .eq("id", matchId);
+
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Failed to delete match:", error);
+      throw new Error(`Failed to delete match: ${error.message}`);
     }
   }
 
