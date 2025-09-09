@@ -4,6 +4,7 @@ import { ResumeUploadDto, ResumeUpdateDto } from "../dtos/resume.dto";
 import { ResumeService } from "../services/resume.service";
 import HttpException from "../exceptions/HttpException";
 import { AuthenticatedRequest } from "../interfaces/auth.interface";
+import { validateFile } from "../utils/fileValidation";
 
 export class ResumeController {
   public resumeService = new ResumeService();
@@ -36,6 +37,16 @@ export class ResumeController {
           400,
           "Invalid file type. Only PDF, DOC, and DOCX files are allowed"
         );
+      }
+
+      // Validate file content (check actual file signature)
+      const fileValidation = validateFile(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype
+      );
+      if (!fileValidation.isValid) {
+        throw new HttpException(400, fileValidation.error);
       }
 
       // Validate file size (max 5MB)

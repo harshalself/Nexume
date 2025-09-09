@@ -20,6 +20,13 @@ class CandidatesRoute implements Route {
       this.candidatesController.getCandidates
     );
 
+    // Get top candidates (best matches overall) - MUST be before /:candidateId route
+    this.router.get(
+      `${this.path}/top`,
+      AuthMiddleware.authenticate,
+      this.candidatesController.getTopCandidates
+    );
+
     // Get candidates for a specific job
     this.router.get(
       `${this.path}/job/:jobId`,
@@ -32,13 +39,6 @@ class CandidatesRoute implements Route {
       `${this.path}/:candidateId`,
       AuthMiddleware.authenticate,
       this.candidatesController.getCandidateDetails
-    );
-
-    // Get top candidates (best matches overall)
-    this.router.get(
-      `${this.path}/top/:limit`,
-      AuthMiddleware.authenticate,
-      this.candidatesController.getTopCandidates
     );
   }
 }

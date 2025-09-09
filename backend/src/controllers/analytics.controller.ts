@@ -23,7 +23,7 @@ export class AnalyticsController {
 
       res.status(200).json({
         message: "Dashboard analytics retrieved successfully",
-        analytics,
+        data: analytics,
       });
     } catch (error) {
       next(error);
@@ -50,7 +50,7 @@ export class AnalyticsController {
 
       res.status(200).json({
         message: "Job analytics retrieved successfully",
-        analytics: jobAnalytics,
+        data: jobAnalytics,
       });
     } catch (error) {
       next(error);
@@ -77,7 +77,7 @@ export class AnalyticsController {
 
       res.status(200).json({
         message: "Resume analytics retrieved successfully",
-        analytics: resumeAnalytics,
+        data: resumeAnalytics,
       });
     } catch (error) {
       next(error);
@@ -104,7 +104,7 @@ export class AnalyticsController {
 
       res.status(200).json({
         message: "Match analytics retrieved successfully",
-        analytics: matchAnalytics,
+        data: matchAnalytics,
       });
     } catch (error) {
       next(error);

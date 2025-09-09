@@ -19,6 +19,29 @@ export class CandidatesController {
       const userId = req.user.id;
       const { status, minScore, limit, offset } = req.query;
 
+      // Validate minScore parameter
+      if (
+        minScore &&
+        (isNaN(Number(minScore)) ||
+          Number(minScore) < 0 ||
+          Number(minScore) > 100)
+      ) {
+        throw new HttpException(
+          400,
+          "minScore must be a number between 0 and 100"
+        );
+      }
+
+      // Validate limit parameter
+      if (limit && (isNaN(Number(limit)) || Number(limit) < 0)) {
+        throw new HttpException(400, "limit must be a positive number");
+      }
+
+      // Validate offset parameter
+      if (offset && (isNaN(Number(offset)) || Number(offset) < 0)) {
+        throw new HttpException(400, "offset must be a positive number");
+      }
+
       const candidates = await this.candidatesService.getCandidates(userId, {
         status: status as string,
         minScore: minScore ? Number(minScore) : undefined,
@@ -28,7 +51,7 @@ export class CandidatesController {
 
       res.status(200).json({
         message: "Candidates retrieved successfully",
-        candidates,
+        data: candidates,
         total: candidates.length,
       });
     } catch (error) {
@@ -54,6 +77,24 @@ export class CandidatesController {
         throw new HttpException(400, "Job ID is required");
       }
 
+      // Validate minScore parameter
+      if (
+        minScore &&
+        (isNaN(Number(minScore)) ||
+          Number(minScore) < 0 ||
+          Number(minScore) > 100)
+      ) {
+        throw new HttpException(
+          400,
+          "minScore must be a number between 0 and 100"
+        );
+      }
+
+      // Validate limit parameter
+      if (limit && (isNaN(Number(limit)) || Number(limit) < 0)) {
+        throw new HttpException(400, "limit must be a positive number");
+      }
+
       const candidates = await this.candidatesService.getCandidatesForJob(
         userId,
         jobId,
@@ -66,7 +107,7 @@ export class CandidatesController {
       res.status(200).json({
         message: "Job candidates retrieved successfully",
         jobId,
-        candidates,
+        data: candidates,
         total: candidates.length,
       });
     } catch (error) {
@@ -102,7 +143,7 @@ export class CandidatesController {
 
       res.status(200).json({
         message: "Candidate details retrieved successfully",
-        candidate: candidateDetails,
+        data: candidateDetails,
       });
     } catch (error) {
       next(error);
@@ -111,7 +152,7 @@ export class CandidatesController {
 
   /**
    * Get top candidates (best matches overall)
-   * GET /api/candidates/top/:limit
+   * GET /api/candidates/top
    */
   public getTopCandidates = async (
     req: AuthenticatedRequest,
@@ -120,16 +161,25 @@ export class CandidatesController {
   ) => {
     try {
       const userId = req.user.id;
-      const { limit } = req.params;
+      const { limit } = req.query;
+
+      // Validate limit parameter
+      const limitNum = limit ? Number(limit) : 10;
+      if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+        throw new HttpException(
+          400,
+          "limit must be a number between 1 and 100"
+        );
+      }
 
       const topCandidates = await this.candidatesService.getTopCandidates(
         userId,
-        Number(limit) || 10
+        limitNum
       );
 
       res.status(200).json({
         message: "Top candidates retrieved successfully",
-        candidates: topCandidates,
+        data: topCandidates,
         total: topCandidates.length,
       });
     } catch (error) {

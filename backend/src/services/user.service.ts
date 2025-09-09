@@ -62,45 +62,62 @@ export class UserService {
     };
   }
 
-  public async updateProfile(payload: IUserUpdatePayload): Promise<IUser> {
-    const { llm_api_key, ...userData } = payload;
+  public async updateProfile(
+    userId: string,
+    payload: IUserUpdatePayload
+  ): Promise<IUser> {
+    const { llm_api_key, ...authData } = payload;
 
     // Update user metadata in Supabase Auth
-    const { data, error } = await supabase.auth.updateUser({
-      data: { ...userData, llm_api_key },
-    });
-    if (error || !data.user) {
-      throw new HttpException(400, error?.message || "Profile update failed");
+    const { data: authDataResult, error: authError } =
+      await supabase.auth.updateUser({
+        data: authData,
+      });
+    if (authError || !authDataResult.user) {
+      throw new HttpException(
+        400,
+        authError?.message || "Profile update failed"
+      );
     }
 
-    // If LLM API key is provided, try to store it encrypted in the users table
-    if (llm_api_key) {
-      try {
-        const { error: dbError } = await supabase
-          .from("users")
-          .update({ llm_api_key_encrypted: llm_api_key })
-          .eq("id", data.user.id);
+    // Prepare database update data
+    const dbUpdateData: any = {};
+    if (llm_api_key !== undefined) {
+      dbUpdateData.llm_api_key_encrypted = llm_api_key;
+    }
 
-        if (dbError) {
-          console.error("Failed to update LLM API key:", dbError.message);
-          // Don't throw error, just log it
-        }
-      } catch (err) {
-        console.error("LLM API key storage error:", err);
-        // Don't throw error, continue with the update
+    // Update user in database if there are database fields to update
+    if (Object.keys(dbUpdateData).length > 0) {
+      const { data: dbData, error: dbError } = await supabase
+        .from("users")
+        .update(dbUpdateData)
+        .eq("id", userId)
+        .select("*")
+        .single();
+
+      if (dbError) {
+        throw new HttpException(
+          400,
+          dbError.message || "Database update failed"
+        );
       }
+
+      return {
+        id: dbData.id,
+        email: dbData.email,
+        first_name: dbData.first_name,
+        last_name: dbData.last_name,
+        profile_pic: dbData.profile_pic,
+        is_deleted: dbData.is_deleted,
+        created_at: dbData.created_at,
+        llm_api_key_encrypted: dbData.llm_api_key_encrypted
+          ? "configured"
+          : undefined,
+      };
     }
 
-    return {
-      id: data.user.id,
-      email: data.user.email,
-      first_name: data.user.user_metadata?.first_name || "",
-      last_name: data.user.user_metadata?.last_name || "",
-      profile_pic: data.user.user_metadata?.profile_pic || "",
-      is_deleted: false,
-      created_at: data.user.created_at,
-      llm_api_key_encrypted: llm_api_key || undefined,
-    };
+    // If no database fields to update, return current user data
+    return await this.getProfile(userId);
   }
 
   public async softDeleteProfile(userId: string): Promise<IUser> {

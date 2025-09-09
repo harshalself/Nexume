@@ -6,6 +6,7 @@ import validationMiddleware from "../middlewares/validation.middleware";
 import { ResumeUploadDto, ResumeUpdateDto } from "../dtos/resume.dto";
 import HttpException from "../exceptions/HttpException";
 import { Request, Response, NextFunction } from "express";
+import { validateFile } from "../utils/fileValidation";
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
