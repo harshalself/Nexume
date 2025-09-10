@@ -77,7 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("user", JSON.stringify(res.user));
       localStorage.setItem("accessToken", res.accessToken);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Sign up failed");
+      setError(err.message || "Sign up failed");
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -95,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("accessToken", res.accessToken);
       return true;
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Sign in failed");
+      setError(err.message || "Sign in failed");
       setUser(null);
       setToken(null);
       setIsAuthenticated(false);

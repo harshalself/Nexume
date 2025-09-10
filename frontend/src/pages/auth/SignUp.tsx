@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "../../lib/utils";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
@@ -9,6 +11,7 @@ import { Checkbox } from "../../components/ui/checkbox";
 import Navbar from "../../components/Navbar";
 import authConfig from "../../config/authConfig";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { signUpSchema, SignUpFormData } from "../../lib/validation";
 
 const SignUp = () => {
   const {
@@ -18,34 +21,30 @@ const SignUp = () => {
     haveAccountText,
     signInLinkLabel,
   } = authConfig.signUp;
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    termsAccepted: false,
-  });
   const navigate = useNavigate();
   const { handleSignUp, loading, error } = useAuthContext();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) return;
-    if (!formData.termsAccepted) return;
-    const { confirmPassword, termsAccepted, ...submitData } = formData;
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      termsAccepted: false,
+    },
+  });
+
+  const termsAccepted = watch("termsAccepted");
+
+  const onSubmit = async (data: SignUpFormData) => {
+    const { confirmPassword, termsAccepted, ...submitData } = data;
     await handleSignUp(submitData);
     if (!error) {
       navigate("/dashboard");
     }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
   };
 
   return (
@@ -57,7 +56,7 @@ const SignUp = () => {
         )}>
         <Card className="overflow-hidden hover:shadow-xl transition-shadow w-full max-w-6xl mt-8 mb-2">
           <CardContent className="grid p-0 md:grid-cols-2">
-            <form className="p-8 md:p-12" onSubmit={handleSubmit}>
+            <form className="p-8 md:p-12" onSubmit={handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
@@ -67,81 +66,114 @@ const SignUp = () => {
                     {description}
                   </p>
                 </div>
+
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 text-sm text-center">{error}</p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="first-name">First name</Label>
                     <Input
                       id="first-name"
-                      name="firstName"
                       placeholder="John"
-                      required
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="focus:ring-blue-500 focus:border-blue-500"
+                      {...register("firstName")}
+                      className={cn(
+                        "focus:ring-blue-500 focus:border-blue-500",
+                        errors.firstName && "border-red-500 focus:ring-red-500"
+                      )}
                     />
+                    {errors.firstName && (
+                      <p className="text-red-500 text-sm">
+                        {errors.firstName.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="last-name">Last name</Label>
                     <Input
                       id="last-name"
-                      name="lastName"
                       placeholder="Doe"
-                      required
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="focus:ring-blue-500 focus:border-blue-500"
+                      {...register("lastName")}
+                      className={cn(
+                        "focus:ring-blue-500 focus:border-blue-500",
+                        errors.lastName && "border-red-500 focus:ring-red-500"
+                      )}
                     />
+                    {errors.lastName && (
+                      <p className="text-red-500 text-sm">
+                        {errors.lastName.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
-                      name="email"
                       type="email"
                       placeholder="m@example.com"
-                      required
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="focus:ring-blue-500 focus:border-blue-500"
+                      {...register("email")}
+                      className={cn(
+                        "focus:ring-blue-500 focus:border-blue-500",
+                        errors.email && "border-red-500 focus:ring-red-500"
+                      )}
                     />
+                    {errors.email && (
+                      <p className="text-red-500 text-sm">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="password">Password</Label>
                     <Input
                       id="password"
-                      name="password"
                       type="password"
-                      required
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter your password"
+                      {...register("password")}
+                      className={cn(
+                        "focus:ring-blue-500 focus:border-blue-500",
+                        errors.password && "border-red-500 focus:ring-red-500"
+                      )}
                     />
+                    {errors.password && (
+                      <p className="text-red-500 text-sm">
+                        {errors.password.message}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="confirm-password">Confirm Password</Label>
                     <Input
                       id="confirm-password"
-                      name="confirmPassword"
                       type="password"
-                      required
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Confirm your password"
+                      {...register("confirmPassword")}
+                      className={cn(
+                        "focus:ring-blue-500 focus:border-blue-500",
+                        errors.confirmPassword &&
+                          "border-red-500 focus:ring-red-500"
+                      )}
                     />
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-sm">
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
                   </div>
                 </div>
+
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="terms"
-                    name="termsAccepted"
-                    checked={formData.termsAccepted}
+                    checked={termsAccepted}
                     onCheckedChange={(checked) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        termsAccepted: checked as boolean,
-                      }))
+                      setValue("termsAccepted", checked as boolean)
                     }
                   />
                   <Label
@@ -161,17 +193,18 @@ const SignUp = () => {
                     </a>
                   </Label>
                 </div>
+                {errors.termsAccepted && (
+                  <p className="text-red-500 text-sm">
+                    {errors.termsAccepted.message}
+                  </p>
+                )}
+
                 <Button
                   type="submit"
                   className="w-full btn-primary"
-                  disabled={loading}>
-                  {loading ? "Signing Up..." : buttonLabel}
+                  disabled={loading || isSubmitting}>
+                  {loading || isSubmitting ? "Signing Up..." : buttonLabel}
                 </Button>
-                {error && (
-                  <div className="text-red-500 text-sm text-center">
-                    {error}
-                  </div>
-                )}
                 <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                   <span className="relative z-10 bg-background px-2 text-muted-foreground">
                     Or continue with

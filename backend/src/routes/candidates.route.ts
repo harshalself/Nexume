@@ -20,6 +20,13 @@ class CandidatesRoute implements Route {
       this.candidatesController.getCandidates
     );
 
+    // Get candidates statistics - MUST be before other routes with parameters
+    this.router.get(
+      `${this.path}/stats`,
+      AuthMiddleware.authenticate,
+      this.candidatesController.getCandidatesStats
+    );
+
     // Get top candidates (best matches overall) - MUST be before /:candidateId route
     this.router.get(
       `${this.path}/top`,

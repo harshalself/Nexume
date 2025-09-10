@@ -235,6 +235,7 @@ export class EnhancedMatchingService {
         match_details: {
           basic_score: matchAnalysis.metadata.basic_score,
           ai_score: matchAnalysis.metadata.ai_score,
+          ai_enabled: matchAnalysis.metadata.ai_enabled,
           combined_score: matchAnalysis.match_score,
           ai_analysis: matchAnalysis.ai_analysis,
           basic_analysis: matchAnalysis.basic_analysis,

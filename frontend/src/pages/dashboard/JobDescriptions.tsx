@@ -4,7 +4,8 @@ import JobDescriptionForm from "../../components/JobDescriptionForm";
 import JobDescriptionView from "../../components/JobDescriptionView";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { useJobDescriptions } from "../../hooks/useJobDescriptions";
-import { JD, JDFormData } from "../../interfaces/jobDescription.interface";
+import { JD } from "../../services/jobDescription.service";
+import { JobDescriptionFormData } from "../../lib/validation";
 import { Plus } from "lucide-react";
 
 const JobDescriptions = () => {
@@ -40,15 +41,17 @@ const JobDescriptions = () => {
             Manage and create job descriptions for candidate matching
           </p>
         </div>
-        <button
-          className={`btn-gradient text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:shadow-lg transition-all duration-200${
-            showForm ? " opacity-50 cursor-not-allowed" : ""
-          }`}
-          onClick={() => setShowForm({ mode: "add", jd: null })}
-          disabled={!!showForm}>
-          <Plus className="h-4 w-4" />
-          Add Job Description
-        </button>
+        <div className="flex gap-2">
+          <button
+            className={`btn-gradient text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:shadow-lg transition-all duration-200${
+              showForm ? " opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={() => setShowForm({ mode: "add", jd: null })}
+            disabled={!!showForm}>
+            <Plus className="h-4 w-4" />
+            Add Job Description
+          </button>
+        </div>
       </div>
 
       {error && <div className="text-red-600">{error}</div>}
@@ -59,7 +62,7 @@ const JobDescriptions = () => {
         <div className="mb-6 w-full">
           <JobDescriptionForm
             initialData={showForm.mode === "edit" ? showForm.jd : null}
-            onSubmit={(data: JDFormData) => {
+            onSubmit={(data: JobDescriptionFormData) => {
               if (showForm.mode === "add") handleAdd(data);
               if (showForm.mode === "edit" && showForm.jd)
                 handleUpdate(showForm.jd.id, data);

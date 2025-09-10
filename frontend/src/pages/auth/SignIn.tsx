@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "../../lib/utils";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
@@ -8,25 +10,27 @@ import { Label } from "../../components/ui/label";
 import Navbar from "../../components/Navbar";
 import authConfig from "../../config/authConfig";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { signInSchema, SignInFormData } from "../../lib/validation";
 
 const SignIn = () => {
   const { heading, description, buttonLabel, noAccountText, signUpLinkLabel } =
     authConfig.signIn;
-  const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
   const { handleSignIn, loading, error } = useAuthContext();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const success = await handleSignIn(formData.email, formData.password);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+  });
+
+  const onSubmit = async (data: SignInFormData) => {
+    const success = await handleSignIn(data.email, data.password);
     if (success) {
       navigate("/dashboard");
     }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -38,7 +42,7 @@ const SignIn = () => {
         )}>
         <Card className="overflow-hidden hover:shadow-xl transition-shadow w-full max-w-6xl mt-8 mb-2">
           <CardContent className="grid p-0 md:grid-cols-2">
-            <form className="p-8 md:p-12" onSubmit={handleSubmit}>
+            <form className="p-8 md:p-12" onSubmit={handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
@@ -48,49 +52,64 @@ const SignIn = () => {
                     {description}
                   </p>
                 </div>
+
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 text-sm text-center">{error}</p>
+                  </div>
+                )}
+
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
-                    name="email"
                     type="email"
                     placeholder="m@example.com"
-                    required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="focus:ring-blue-500 focus:border-blue-500"
+                    {...register("email")}
+                    className={cn(
+                      "focus:ring-blue-500 focus:border-blue-500",
+                      errors.email && "border-red-500 focus:ring-red-500"
+                    )}
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
+
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
+                    <Link
+                      to="/forgot-password"
                       className="ml-auto text-sm underline-offset-2 hover:underline text-primary hover:text-blue-800">
                       Forgot your password?
-                    </a>
+                    </Link>
                   </div>
                   <Input
                     id="password"
-                    name="password"
                     type="password"
-                    required
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter your password"
+                    {...register("password")}
+                    className={cn(
+                      "focus:ring-blue-500 focus:border-blue-500",
+                      errors.password && "border-red-500 focus:ring-red-500"
+                    )}
                   />
+                  {errors.password && (
+                    <p className="text-red-500 text-sm">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
+
                 <Button
                   type="submit"
                   className="w-full btn-primary"
-                  disabled={loading}>
-                  {loading ? "Signing In..." : buttonLabel}
+                  disabled={loading || isSubmitting}>
+                  {loading || isSubmitting ? "Signing In..." : buttonLabel}
                 </Button>
-                {error && (
-                  <div className="text-red-500 text-sm text-center">
-                    {error}
-                  </div>
-                )}
                 <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                   <span className="relative z-10 bg-background px-2 text-muted-foreground">
                     Or continue with

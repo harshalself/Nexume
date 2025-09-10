@@ -1,5 +1,11 @@
 import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { profileUpdateSchema, ProfileUpdateFormData } from "../lib/validation";
 
 type ProfileFormProps = {
   profile: {
@@ -28,36 +34,44 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   onUpdate,
   success,
 }) => {
-  const [form, setForm] = React.useState({
-    firstName: profile.firstName || "",
-    lastName: profile.lastName || "",
-    email: profile.email || "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileUpdateFormData>({
+    resolver: zodResolver(profileUpdateSchema),
+    defaultValues: {
+      firstName: profile.firstName || "",
+      lastName: profile.lastName || "",
+      email: profile.email || "",
+    },
   });
 
   React.useEffect(() => {
     if (!editing) {
-      setForm({
+      reset({
         firstName: profile.firstName || "",
         lastName: profile.lastName || "",
         email: profile.email || "",
       });
     }
-  }, [profile, editing]);
+  }, [profile, editing, reset]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdate(form);
+  const onSubmit = (data: ProfileUpdateFormData) => {
+    // Ensure all fields are strings
+    const submitData = {
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
+      email: data.email || "",
+    };
+    onUpdate(submitData);
   };
 
   const handleEdit = () => setEditing(true);
 
   const handleCancel = () => {
-    setForm({
+    reset({
       firstName: profile.firstName || "",
       lastName: profile.lastName || "",
       email: profile.email || "",
@@ -68,69 +82,90 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   return (
     <form
       className="w-full border-2 border-blue-100 hover:shadow-lg transition-all duration-300 group bg-white p-6 rounded-lg shadow"
-      onSubmit={handleSubmit}>
-      {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-      {success && (
-        <div className="text-green-600 text-sm mb-2">
-          Profile updated successfully!
+      onSubmit={handleSubmit(onSubmit)}>
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
-      <div className="mb-4">
-        <label htmlFor="firstName" className="block text-sm font-medium mb-1">
-          First Name
-        </label>
-        <input
-          id="firstName"
-          name="firstName"
-          type="text"
-          className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-          value={form.firstName}
-          onChange={handleChange}
-          disabled={!editing}
-          required
-        />
+      {success && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-green-600 text-sm">
+            Profile updated successfully!
+          </p>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input
+            id="firstName"
+            type="text"
+            {...register("firstName")}
+            disabled={!editing}
+            className={cn(
+              "focus:ring-blue-500 focus:border-blue-500",
+              !editing && "bg-gray-50",
+              errors.firstName && "border-red-500 focus:ring-red-500"
+            )}
+          />
+          {errors.firstName && (
+            <p className="text-red-500 text-sm">{errors.firstName.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input
+            id="lastName"
+            type="text"
+            {...register("lastName")}
+            disabled={!editing}
+            className={cn(
+              "focus:ring-blue-500 focus:border-blue-500",
+              !editing && "bg-gray-50",
+              errors.lastName && "border-red-500 focus:ring-red-500"
+            )}
+          />
+          {errors.lastName && (
+            <p className="text-red-500 text-sm">{errors.lastName.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            {...register("email")}
+            disabled={!editing}
+            className={cn(
+              "focus:ring-blue-500 focus:border-blue-500",
+              !editing && "bg-gray-50",
+              errors.email && "border-red-500 focus:ring-red-500"
+            )}
+          />
+          {errors.email && (
+            <p className="text-red-500 text-sm">{errors.email.message}</p>
+          )}
+        </div>
       </div>
-      <div className="mb-4">
-        <label htmlFor="lastName" className="block text-sm font-medium mb-1">
-          Last Name
-        </label>
-        <input
-          id="lastName"
-          name="lastName"
-          type="text"
-          className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-          value={form.lastName}
-          onChange={handleChange}
-          disabled={!editing}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="email" className="block text-sm font-medium mb-1">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-          value={form.email}
-          onChange={handleChange}
-          disabled={!editing}
-          required
-        />
-      </div>
-      <div className="flex gap-2 mt-4">
+
+      <div className="flex gap-2 mt-6">
         {editing ? (
           <>
-            <Button type="submit" variant="default" disabled={loading}>
-              Save
+            <Button
+              type="submit"
+              variant="default"
+              disabled={loading || isSubmitting}>
+              {loading || isSubmitting ? "Saving..." : "Save"}
             </Button>
             <Button
               type="button"
               variant="secondary"
               onClick={handleCancel}
-              disabled={loading}>
+              disabled={loading || isSubmitting}>
               Cancel
             </Button>
           </>

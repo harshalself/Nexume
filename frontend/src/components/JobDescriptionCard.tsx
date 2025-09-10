@@ -1,7 +1,7 @@
 import React from "react";
-import { JD } from "../interfaces/jobDescription.interface";
+import { JD } from "../services/jobDescription.service";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
-import { FileText, Edit, Trash2, Eye } from "lucide-react";
+import { FileText, Edit, Trash2, Eye, MapPin, Building } from "lucide-react";
 import { Button } from "./ui/button";
 
 type Props = {
@@ -30,7 +30,12 @@ const JobDescriptionCard: React.FC<Props> = ({
         <div className="p-3 rounded-lg bg-blue-50 group-hover:scale-110 transition-transform duration-200">
           <FileText className="h-6 w-6 text-blue-700" />
         </div>
-        <span className="text-xs px-2 py-1 rounded-full font-medium bg-blue-50 text-blue-700">
+        <span
+          className={`text-xs px-2 py-1 rounded-full font-medium ${
+            jobDescription.status === "Active"
+              ? "bg-green-50 text-green-700"
+              : "bg-gray-50 text-gray-700"
+          }`}>
           {jobDescription.status}
         </span>
       </div>
@@ -39,17 +44,31 @@ const JobDescriptionCard: React.FC<Props> = ({
       </CardTitle>
     </CardHeader>
     <CardContent>
-      <div className="mb-2">
-        <span className="text-xs text-muted-foreground">
-          {jobDescription.description}
-        </span>
+      <div className="space-y-2 mb-4">
+        {/* Company and Location - if available in future */}
+        <div className="flex items-center gap-1 text-sm text-gray-600">
+          <Building className="h-3 w-3" />
+          <span>Company</span>
+        </div>
+        <div className="flex items-center gap-1 text-sm text-gray-600">
+          <MapPin className="h-3 w-3" />
+          <span>Location</span>
+        </div>
+
+        <div className="text-sm text-muted-foreground line-clamp-2">
+          {jobDescription.description.length > 100
+            ? `${jobDescription.description.substring(0, 100)}...`
+            : jobDescription.description}
+        </div>
       </div>
-      <div className="mb-2">
+
+      <div className="mb-4">
         <span className="text-xs text-muted-foreground">Created: </span>
         <span className="text-sm text-muted-foreground">
-          {jobDescription.created}
+          {new Date(jobDescription.created).toLocaleDateString()}
         </span>
       </div>
+
       <div className="flex gap-2 mt-2">
         <Button
           variant="ghost"

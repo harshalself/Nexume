@@ -186,4 +186,20 @@ export class CandidatesController {
       next(error);
     }
   };
+
+  public getCandidatesStats = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const stats = await this.candidatesService.getCandidatesStats();
+      res.status(200).json({
+        message: "Candidates statistics retrieved successfully",
+        data: stats,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

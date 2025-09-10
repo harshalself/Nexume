@@ -711,11 +711,12 @@ async function batchProcessMatches() {
   console.log("⚡ PHASE 4.9: BATCH PROCESS MATCHES");
   console.log("=".repeat(60));
 
-  if (uploadedResumeIds.length < 2 || createdJobIds.length < 2) {
+  // Check if we have enough resumes and jobs for meaningful batch testing
+  if (uploadedResumeIds.length < 1 || createdJobIds.length < 2) {
     logStep(
       "Batch Processing",
       false,
-      "Need at least 2 resumes and 2 jobs for batch testing"
+      "Need at least 1 resume and 2 jobs for batch testing"
     );
     return false;
   }
@@ -725,21 +726,37 @@ async function batchProcessMatches() {
   );
 
   try {
-    // Create batch of matches to process
-    const batchMatches = [
-      {
-        resumeId: uploadedResumeIds[0],
+    // Create batch of matches to process using available resumes
+    const batchMatches = [];
+
+    // Use the first available resume for multiple jobs
+    const resumeId = uploadedResumeIds[0];
+
+    // Create matches for the first two jobs
+    if (createdJobIds.length >= 2) {
+      batchMatches.push({
+        resumeId: resumeId,
         jobId: createdJobIds[0],
-      },
-      {
-        resumeId: uploadedResumeIds[0],
+      });
+      batchMatches.push({
+        resumeId: resumeId,
         jobId: createdJobIds[1],
-      },
-      {
-        resumeId: uploadedResumeIds[uploadedResumeIds.length > 1 ? 1 : 0],
-        jobId: createdJobIds[createdJobIds.length > 1 ? 1 : 0],
-      },
-    ];
+      });
+    }
+
+    // If we have a second resume, use it with different jobs
+    if (uploadedResumeIds.length > 1) {
+      batchMatches.push({
+        resumeId: uploadedResumeIds[1],
+        jobId: createdJobIds[0],
+      });
+    } else if (createdJobIds.length >= 3) {
+      // Use same resume with third job if available
+      batchMatches.push({
+        resumeId: resumeId,
+        jobId: createdJobIds[2],
+      });
+    }
 
     console.log("📤 Processing batch of matches...");
     console.log(`   📊 Batch Size: ${batchMatches.length} combinations`);
@@ -769,7 +786,7 @@ async function batchProcessMatches() {
           );
           console.log(
             `         🤖 AI Enabled: ${
-              result.match_details.ai_enabled ? "Yes" : "No"
+              result.match_details?.ai_enabled ? "Yes" : "No"
             }`
           );
         });

@@ -7,6 +7,8 @@ const AboutUs = React.lazy(() => import("../pages/home/AboutUs"));
 const ContactUs = React.lazy(() => import("../pages/home/ContactUs"));
 const SignIn = React.lazy(() => import("../pages/auth/SignIn"));
 const SignUp = React.lazy(() => import("../pages/auth/SignUp"));
+const ForgotPassword = React.lazy(() => import("../pages/auth/ForgotPassword"));
+const ResetPassword = React.lazy(() => import("../pages/auth/ResetPassword"));
 const Dashboard = React.lazy(() => import("../pages/Dashboard"));
 const JobDescriptions = React.lazy(
   () => import("../pages/dashboard/JobDescriptions")
@@ -31,6 +33,8 @@ export const publicRoutes: RouteConfig[] = [
   { path: "/contact-us", element: ContactUs },
   { path: "/signin", element: SignIn },
   { path: "/signup", element: SignUp },
+  { path: "/forgot-password", element: ForgotPassword },
+  { path: "/reset-password", element: ResetPassword },
 ];
 
 export const protectedRoutes: RouteConfig[] = [

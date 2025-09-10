@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { JD, JDFormData } from "../services/jobDescription.service";
+import { JD } from "../services/jobDescription.service";
+import { JobDescriptionFormData } from "../lib/validation";
 import {
   getJobDescriptions,
   addJobDescription,
@@ -12,15 +13,10 @@ export const useJobDescriptions = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // For future: add pagination/filtering state here
-  // const [page, setPage] = useState(1);
-  // const [filter, setFilter] = useState<string>("");
-
   const fetchJobDescriptions = async () => {
     setLoading(true);
     setError(null);
     try {
-      // For future: pass pagination/filter params to service here
       const data = await getJobDescriptions();
       setJobDescriptions(data);
     } catch (err) {
@@ -34,7 +30,7 @@ export const useJobDescriptions = () => {
     fetchJobDescriptions();
   }, []);
 
-  const handleAdd = async (data: JDFormData) => {
+  const handleAdd = async (data: JobDescriptionFormData) => {
     setLoading(true);
     setError(null);
     try {
@@ -47,7 +43,7 @@ export const useJobDescriptions = () => {
     }
   };
 
-  const handleUpdate = async (id: number, data: JDFormData) => {
+  const handleUpdate = async (id: number, data: JobDescriptionFormData) => {
     setLoading(true);
     setError(null);
     try {
@@ -87,6 +83,5 @@ export const useJobDescriptions = () => {
     handleAdd,
     handleUpdate,
     handleDelete,
-    // For future: expose pagination/filter setters here
   };
 };

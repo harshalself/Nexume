@@ -9,14 +9,13 @@ const path = require("path");
 
 // Test files in logical execution order
 const testFiles = [
-  "test-user-apis.js",
-  "test-job-apis.js",
-  "test-resume-apis.js",
-  "test-resume-processing.js",
-  "test-enhanced-matching.js",
-  "test-candidates-apis.js",
-  "test-analytics-apis.js",
-  "test-gemini.js",
+  "phase1-user-simulation.js",
+  "phase2-job-description-simulation.js",
+  "phase3-resume-management-simulation.js",
+  "phase4-enhanced-matching-simulation.js",
+  "phase5-candidates-management-simulation.js",
+  "phase6-analytics-dashboard-simulation.js",
+  "test-gemini-api.js",
 ];
 
 console.log("🧪 Nexume Backend Test Suite\n");
