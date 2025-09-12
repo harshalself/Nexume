@@ -1,27 +1,23 @@
 // Placeholder service for dashboard data
 export const getDashboardStats = async () => {
-  // Replace with real API call later
-  return Promise.resolve([
-    {
-      title: "Active Chatbots",
-      value: "12",
-      description: "Currently deployed",
-      icon: "Bot",
-      trend: "+2 this month",
-      color: "text-primary",
-      bgColor: "bg-muted",
-    },
-    // ...add more mock stats as needed
-  ]);
+  // This function is no longer used - replaced by analytics API
+  return Promise.resolve([]);
 };
 
 export const getDashboardQuickActions = async () => {
   // Replace with real API call later
   return Promise.resolve([
     {
-      label: "Create New Chatbot",
-      description: "Start building a new AI assistant",
+      label: "Create Job Description",
+      description: "Add a new job posting to find candidates",
     },
-    // ...add more mock actions as needed
+    {
+      label: "Upload Resume",
+      description: "Add candidate resumes to the system",
+    },
+    {
+      label: "View Analytics",
+      description: "Detailed insights and performance metrics",
+    },
   ]);
 };

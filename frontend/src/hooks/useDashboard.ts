@@ -1,28 +1,63 @@
+import { useMemo } from "react";
+import { useDashboardAnalytics } from "./useDashboardAnalytics";
+import { getDashboardQuickActions } from "../services/dashboard.service";
 import { useEffect, useState } from "react";
-import {
-  getDashboardStats,
-  getDashboardQuickActions,
-} from "../services/dashboard.service";
 
 export const useDashboard = () => {
-  const [stats, setStats] = useState<any[]>([]);
+  const {
+    data: analyticsData,
+    loading: analyticsLoading,
+    error: analyticsError,
+  } = useDashboardAnalytics(true, 30000);
   const [quickActions, setQuickActions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [actionsLoading, setActionsLoading] = useState(true);
+  const [actionsError, setActionsError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    Promise.all([getDashboardStats(), getDashboardQuickActions()])
-      .then(([statsData, actionsData]) => {
-        setStats(statsData);
+    getDashboardQuickActions()
+      .then((actionsData) => {
         setQuickActions(actionsData);
-        setLoading(false);
+        setActionsLoading(false);
       })
       .catch((err) => {
-        setError(err.message || "Failed to load dashboard data");
-        setLoading(false);
+        setActionsError(err.message || "Failed to load quick actions");
+        setActionsLoading(false);
       });
   }, []);
+
+  const stats = useMemo(() => {
+    if (!analyticsData) return [];
+
+    return [
+      {
+        title: "Total Jobs",
+        value: analyticsData.totalJobs.toString(),
+        description: "Job descriptions created",
+        trend: `${analyticsData.jobsWithMatches} with matches`,
+        icon: "💼",
+        bgColor: "bg-blue-50",
+      },
+      {
+        title: "Total Resumes",
+        value: analyticsData.totalResumes.toString(),
+        description: "Resumes uploaded",
+        trend: `${analyticsData.resumesWithMatches} matched`,
+        icon: "📄",
+        bgColor: "bg-green-50",
+      },
+      {
+        title: "Match Quality",
+        value: `${analyticsData.averageMatchScore.toFixed(1)}%`,
+        description: "Average match score",
+        trend: `Best: ${analyticsData.topMatchScore.toFixed(1)}%`,
+        icon: "🎯",
+        bgColor: "bg-purple-50",
+      },
+    ];
+  }, [analyticsData]);
+
+  const loading = analyticsLoading || actionsLoading;
+  const error = analyticsError || actionsError;
 
   return { stats, quickActions, loading, error };
 };
